@@ -24,7 +24,7 @@ shinyServer(function(input, output) {
   })
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste('data', ".csv", sep = ",")
+      "student-data.csv"
     },
     content = function(file) {
       write.csv(dat, file)

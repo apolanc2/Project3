@@ -44,8 +44,7 @@ shinyUI(
             #   numericInput("maxrows", "Rows to show", 25),
           fluidRow(
               box(DT::dataTableOutput("datTable"),
-              # verbatimTextOutput("datTable"),
-               downloadButton("downloadCsv", "Download as CSV"))
+                  downloadButton("downloadData", "Download as CSV"))
       )
     )
 )
