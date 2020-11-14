@@ -31,30 +31,39 @@ shinyUI(
         h4("This project is about the student data set. This data set captures many socio-economic and personal variables to determine whether it affects the grades of students in math.")
         ),
         
-        
         tabItem(tabName = "eda",
                  h2("Exploratory Data Analysis"),
-        selectizeInput("sex", "sex", selected = "F", choices = levels(as.factor(dat$sex))),
-        selectInput("var","Plot Our Y/N Variables",
-                    choices = c("schoolsup", "famsup", "paid", "activities", "nursery", "higher", "romantic"), selected = "higher"),
-        box(plotOutput("edaPlot")),
-        box(tableOutput("edaTable")),
-               ),
+          selectizeInput("sex", "sex", selected = "F", choices = levels(as.factor(dat$sex))),
+          box(selectInput("var","Plot Our Dichotomous Variables",
+              choices = c("school","address","Pstatus","schoolsup", "famsup", "paid", "activities", "nursery", "higher", "romantic"), selected = "higher"),
+            plotOutput("edaPlot")),
+          box(selectInput("var2","Plot Our Ranked Variables",
+                        choices = c("famrel", "freetime", "goout", "Dalc", "Walc", "health"), selected = "famrel"),
+            plotOutput("edaPlot2")),
+          box(selectInput("responses", "Summary of Semester grades and overall grade",
+                        choices = c("G1","G2","G3")),
+            plotOutput("sumPlot")),
+          box(plotOutput("corPlot"))
+          ),
+        
         tabItem(tabName = "clustering",
                 h2("Clustering our data")
                 ),
+        
         tabItem(tabName = "modeling",
                 h2("Setup Some Models for our data")
                 ),
+        
         tabItem(tabName = "rawdat",
                 h2("Our Raw Data"),
             #   numericInput("maxrows", "Rows to show", 25),
           fluidRow(
               box(DT::dataTableOutput("datTable"),
                   downloadButton("downloadData", "Download as CSV"))
-      )
-    )
-)
-))
-)
+           ) # Close fluid row
+        ) # close data tab
+    ) # close tab items 
+  ) # close dash body
+  ) # close dash page
+) # close shiny
 
