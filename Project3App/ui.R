@@ -12,7 +12,8 @@
 library(shiny)
 library(shinydashboard)
 
-ui <- dashboardPage(
+shinyUI(
+  dashboardPage(
     dashboardHeader(title = " Project 3: Students"),
     dashboardSidebar(
         sidebarMenu(
@@ -20,40 +21,34 @@ ui <- dashboardPage(
             menuItem("Data Exploration", tabName = "eda"),
             menuItem("Clustering", tabName = "clustering"),
             menuItem("Modeling", tabName = "modeling"),
-            menuItem("Data", tabname = "data")
+            menuItem("Data", tabName = "rawdat")
         )
     ),
     dashboardBody(
       tabItems(
-        tabItem(tabName = "About") ,
-       # h4("This project is about the student data set. This data set captures many socio-economic and personal variables to determine whether it affects the grades of students in math." )
-       tabItem("data",
-               numericInput("maxrows", "Rows to show", 25),
-               verbatimTextOutput("datTable"),
-               downloadButton("downloadCsv", "Download as CSV")
+        tabItem(tabName = "about",
+                h2("About This Project")
+        #h4("This project is about the student data set. This data set captures many socio-economic and personal variables to determine whether it affects the grades of students in math.")
+        ),
+        tabItem( tabName = "eda",
+                 h2("Exploratory Data Analysis")
+                 ),
+        tabItem(tabName = "clustering",
+                h2("Clustering our data")
+                ),
+        tabItem(tabName = "modeling",
+                h2("Setup Some Models for our data")
+                ),
+        tabItem(tabName = "rawdat",
+                h2("Our Raw Data"),
+            #   numericInput("maxrows", "Rows to show", 25),
+          fluidRow(
+              box(DT::dataTableOutput("datTable"),
+              # verbatimTextOutput("datTable"),
+               downloadButton("downloadCsv", "Download as CSV"))
       )
     )
 )
+))
 )
-# Define UI for application that draws a histogram
-#shinyUI(fluidPage(
 
-    # Application title
- #   titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins
-  #  sidebarLayout(
-   #     sidebarPanel(
-     #       sliderInput("bins",
-    #                    "Number of bins:",
-      #                  min = 1,
-       #                 max = 50,
-        #                value = 30)
-    #    ),
-
-        # Show a plot of the generated distribution
-      #  mainPanel(
-         #   plotOutput("distPlot")
-       # )
-#    )
-#))

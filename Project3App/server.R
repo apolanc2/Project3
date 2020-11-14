@@ -11,31 +11,22 @@
 
 library(shiny)
 library(shinydashboard)
+library(DT)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
+  # read in our data. local directory not working at the moment and need full path
+  dat <- read.csv(file = 'C:/Users/nelso/Documents/NCSU/ST 558/Project3/Project3/student-mat.csv', sep = ";")
 
-#    output$distPlot <- renderPlot({
-
-        # generate bins based on input$bins from ui.R
- #       x    <- faithful[, 2]
-  #      bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-   #     hist(x, breaks = bins, col = 'darkgray', border = 'white')
-
- #   })
-  output$downloadCsv <- downloadHandler(
-    filename = "student-mat.csv",
-    content = function(file) {
-      write.csv(pkgData(), file)
-    },
-    contentType = "text/csv"
-  )
-  
-  output$datTable <- renderPrint({
-    orig <- options(width = 1000)
-    print(tail(pkgData(), input$maxrows), row.names = FALSE)
-    options(orig)
+  # output the raw data
+  output$datTable <- DT::renderDataTable({
+    datatable(dat)
   })
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste('data', ".csv", sep = ",")
+    },
+    content = function(file) {
+      write.csv(dat, file)
+    })
 })
