@@ -27,12 +27,19 @@ shinyUI(
     dashboardBody(
       tabItems(
         tabItem(tabName = "about",
-                h2("About This Project")
-        #h4("This project is about the student data set. This data set captures many socio-economic and personal variables to determine whether it affects the grades of students in math.")
+                h2("About This Project"),
+        h4("This project is about the student data set. This data set captures many socio-economic and personal variables to determine whether it affects the grades of students in math.")
         ),
-        tabItem( tabName = "eda",
-                 h2("Exploratory Data Analysis")
-                 ),
+        
+        
+        tabItem(tabName = "eda",
+                 h2("Exploratory Data Analysis"),
+        selectizeInput("sex", "sex", selected = "F", choices = levels(as.factor(dat$sex))),
+        selectInput("var","Plot Our Y/N Variables",
+                    choices = c("schoolsup", "famsup", "paid", "activities", "nursery", "higher", "romantic"), selected = "higher"),
+        box(plotOutput("edaPlot")),
+        box(tableOutput("edaTable")),
+               ),
         tabItem(tabName = "clustering",
                 h2("Clustering our data")
                 ),

@@ -19,6 +19,18 @@ shinyServer(function(input, output) {
   dat <- read.csv(file = 'C:/Users/nelso/Documents/NCSU/ST 558/Project3/Project3/student-mat.csv', sep = ";")
 
   # output the raw data
+  #output$edaTable <- renderTable({
+   # var <- input$var
+    #datNew <- dat[, c("sex", var),drop = FALSE]
+  # tab
+ #table(dat$sex, dat[[var]])
+  # table(input$sex,dat$failures)
+  
+    output$edaPlot <- renderPlot({
+      ggplot(data = dat,aes_string(x=input$var)) + 
+        geom_bar(position = "dodge", aes(fill = sex))
+
+    }) 
   output$datTable <- DT::renderDataTable({
     datatable(dat)
   })
