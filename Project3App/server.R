@@ -53,7 +53,9 @@ shinyServer(function(input, output) {
     correlations <- cor(select_if(dat,is.numeric))
     corrplot(correlations)
   })
-  
+  output$datTable <- DT::renderDataTable({
+    datatable(dat)
+  })
   output$downloadData <- downloadHandler(
     filename = function() {
       "student-data.csv"
@@ -61,4 +63,5 @@ shinyServer(function(input, output) {
     content = function(file) {
       write.csv(dat, file)
     })
-})
+  
+}) # close shinyserver
