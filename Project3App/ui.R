@@ -11,6 +11,11 @@
 
 library(shiny)
 library(shinydashboard)
+library(DT)
+library(tidyverse)
+library(corrplot)
+library(rgl)
+library(tree)
 
 shinyUI(
   dashboardPage(
@@ -40,14 +45,18 @@ shinyUI(
           selectizeInput("sex", "sex", selected = "F", choices = levels(as.factor(dat$sex))),
           box(selectInput("var","Plot Our Dichotomous Variables",
               choices = c("school","address","Pstatus","schoolsup", "famsup", "paid", "activities", "nursery", "higher", "romantic"), selected = "higher"),
-            plotOutput("edaPlot")),
+            plotOutput("edaPlot"),
+            downloadButton("downloadEdaPlot", "Download as png")),
           box(selectInput("var2","Plot Our Ranked Variables",
                         choices = c("famrel", "freetime", "goout", "Dalc", "Walc", "health"), selected = "famrel"),
-            plotOutput("edaPlot2")),
+            plotOutput("edaPlot2"),
+            downloadButton("downloadEdaPlot2", "Download as png")),
           box(selectInput("responses", "Summary of Semester grades and overall grade",
                         choices = c("G1","G2","G3")),
-            plotOutput("sumPlot")),
-          box(plotOutput("corPlot"))
+            plotOutput("sumPlot"),
+            downloadButton("downloadSumPlot", "Download as png")),
+          box(plotOutput("corPlot"),
+              downloadButton("downloadCorPlot", "Download as png"))
           ),
         
         
@@ -56,11 +65,26 @@ shinyUI(
         
         
         tabItem(tabName = "clustering",
-                h2("Clustering our data")
+                h2("Clustering our data"),
+                pageWithSidebar(
+                  headerPanel('K-means clustering'),
+                  sidebarPanel(
+                    selectInput('xcol', 'X Variable', names(datNum)),
+                    selectInput('ycol', 'Y Variable', names(datNum),
+                                selected=names(datNum)[[2]]),
+                    numericInput('clusters', 'Cluster count', 3,
+                                 min = 1, max = 9)
+                  ),
+                  mainPanel(
+                    plotOutput('clusPlot'),
+                    plotOutput('dendoPlot')
+                  )
+                )
                 ),
         
         tabItem(tabName = "modeling",
-                h2("Setup Some Models for our data")
+                h2("Setup Some Models for our data"),
+                h4("For the response I am going to use the final grades.")
                 ),
         
         
