@@ -119,7 +119,9 @@ shinyUI(
                                choices =  c(names(dat[1:30])), selected = "failures"),
                 selectizeInput("allvar5", "Choose the Fifth Predictor Variable", 
                                choices =  c(names(dat[1:30])), selected = "goout")),
-                box(verbatimTextOutput("glmMod"))
+                box(verbatimTextOutput('glmMod')),
+                box(tableOutput('pred'))
+                
                 ), # close modeling tab
         
         

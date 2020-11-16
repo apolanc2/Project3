@@ -139,22 +139,36 @@ shinyServer(function(input, output) {
   })
   
 # Modeling tab
+  # for reproducibility
+  set.seed(123)
+  # create train and test data sets
+  train <- sample(1:nrow(dat), size = nrow(dat)*0.8)
+  test <- dplyr::setdiff(1:nrow(dat), train)
+  datTrain <- dat[train,]
+  datTest <- dat[test,]
+  # our formula using user inputs for our variables
+  meanform <- reactive({
+    as.formula(paste(input$response, "~", input$allvar1, "+", input$allvar2, "+", input$allvar3, "+", input$allvar4, "+", input$allvar5))
+  })
+  # fit1 <- gls(data = dat, model = meanform, method = "REML")
+  fit1<- reactive({
+    train(data = dat, meanform(), method = "glm", 
+               preProcess = c("center", "scale"),
+               trControl = trainControl(method="cv",number=10))
+  })
  output$glmMod <- renderPrint({
-   # for reproducibility
-   set.seed(123)
-   # create train and test data sets
-   train <- sample(1:nrow(data), size = nrow(dat)*0.8)
-   test <- dplyr::setdiff(1:nrow(dat), train)
-   datTrain <- dat[train,]
-   datTest <- dat[test,]
-   # our formula using user inputs for our variables
-   meanform <- as.formula(paste(input$response, "~", input$allvar1, "+", input$allvar2, "+", input$allvar3, "+", input$allvar4, "+", input$allvar5))
-   # fit1 <- gls(data = dat, model = meanform, method = "REML")
-   fit1<- train(data = datTrain, meanform, method = "glm", 
-                preProcess = c("center", "scale"),
-                trControl = trainControl(method="cv",number=10))
-   summary(fit1)
+   summary(fit1())
  })
+ 
+ output$pred <- renderTable({
+   testFit <- datTest %>% select(input$response, input$allvar1, input$allvar2, input$allvar3,input$allvar4, input$allvar5)
+   predFit <- predict(fit1(), newdata = testFit,se.fit = TRUE)
+   predSum <- round(summary(predFit),4)
+   resp <- datTrain %>% select(input$response)
+   trainSum <- summary(resp)
+   cbind(trainSum,predSum)
+    })
+ 
   
 # Raw Data tab
   output$datTable <- DT::renderDataTable({
