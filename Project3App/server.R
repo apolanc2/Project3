@@ -16,6 +16,8 @@ library(tidyverse)
 library(corrplot)
 library(rgl)
 library(tree)
+library(nlme)
+library(caret)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
@@ -37,9 +39,18 @@ shinyServer(function(input, output) {
   # table(input$sex,dat$failures)
   
 # EDA tab
+  getData <- reactive({
+    if(input$schoolFilter == 0){
+      newData <- dat
+    }
+      else{newData <- dat %>% filter(school == input$school)}
+  })
+
+  
  # 1st plot
   eda_plot <- reactive({
-     ggplot(data = dat,aes_string(x=input$var)) + 
+    newData <- getData()
+     ggplot(data = newData,aes_string(x=input$var)) + 
        geom_boxplot(position = "dodge", aes(y = G3, fill = sex))
   })
   output$edaPlot <- renderPlot({
@@ -55,7 +66,8 @@ shinyServer(function(input, output) {
     })
  # 2nd plot 
   eda_plot2 <- reactive({
-    ggplot(data = dat,aes_string(x=input$var2)) + 
+    newData <- getData()
+    ggplot(data = newData,aes_string(x=input$var2)) + 
       geom_boxplot(position = "dodge", aes(y = G3, fill = sex))    
   })
   output$edaPlot2 <- renderPlot({
@@ -70,7 +82,8 @@ shinyServer(function(input, output) {
     })
  # 3rd plot
   sum_plot <- reactive({
-    ggplot(data = dat,aes_string(y=input$responses)) + 
+    newData <- getData()
+    ggplot(data = newData,aes_string(y=input$responses)) + 
       geom_boxplot(position = "dodge", fill = "purple", aes(x = school))
   })
   output$sumPlot <- renderPlot({
@@ -81,11 +94,12 @@ shinyServer(function(input, output) {
       "Summary-Plot.png"
     },
     content = function(file) {
-      ggsave(file, plot= sum_plot(),device = "png")
+      ggsave(file, plot = sum_plot(),device = "png")
     })
  # 4th plot
   cor_plot <- reactive({
-    correlations <- cor(select_if(dat,is.numeric))
+    newData <- getData()
+    correlations <- cor(select_if(newData,is.numeric))
     corrplot(correlations)
   })
   output$corPlot <- renderPlot({
@@ -96,8 +110,9 @@ shinyServer(function(input, output) {
       "Corr-Plot.png"
     },
     content = function(file) {
-      ggsave(file, plot= cor_plot(),device = "png")
+      ggsave(file, plot = cor_plot(),device = "png")
     })
+
 # Cluster tab
   datNum <- select_if(dat,is.numeric)
   selectedData <- reactive({
@@ -124,7 +139,22 @@ shinyServer(function(input, output) {
   })
   
 # Modeling tab
-  
+ output$glmMod <- renderPrint({
+   # for reproducibility
+   set.seed(123)
+   # create train and test data sets
+   train <- sample(1:nrow(data), size = nrow(dat)*0.8)
+   test <- dplyr::setdiff(1:nrow(dat), train)
+   datTrain <- dat[train,]
+   datTest <- dat[test,]
+   # our formula using user inputs for our variables
+   meanform <- as.formula(paste(input$response, "~", input$allvar1, "+", input$allvar2, "+", input$allvar3, "+", input$allvar4, "+", input$allvar5))
+   # fit1 <- gls(data = dat, model = meanform, method = "REML")
+   fit1<- train(data = datTrain, meanform, method = "glm", 
+                preProcess = c("center", "scale"),
+                trControl = trainControl(method="cv",number=10))
+   summary(fit1)
+ })
   
 # Raw Data tab
   output$datTable <- DT::renderDataTable({

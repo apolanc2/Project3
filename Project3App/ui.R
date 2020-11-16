@@ -36,28 +36,49 @@ shinyUI(
         h4("This project is about the student data set. This data set captures many socio-economic and personal variables to determine whether it affects the grades of students in math.")
         ),
         
+  
         
-        
-        
-        
-        tabItem(tabName = "eda",
-                 h2("Exploratory Data Analysis"),
-          selectizeInput("sex", "sex", selected = "F", choices = levels(as.factor(dat$sex))),
-          box(selectInput("var","Plot Our Dichotomous Variables",
-              choices = c("school","address","Pstatus","schoolsup", "famsup", "paid", "activities", "nursery", "higher", "romantic"), selected = "higher"),
-            plotOutput("edaPlot"),
-            downloadButton("downloadEdaPlot", "Download as png")),
-          box(selectInput("var2","Plot Our Ranked Variables",
+        tabItem(tabName = "eda", 
+          fluidPage(
+            h2("Exploratory Data Analysis"),
+            checkboxInput("schoolFilter", h4("Explore by school?")),
+            conditionalPanel(condition = ("input.schoolFilter==true"), 
+                               selectizeInput("school", choices = c("GP", "MS"),selected = "GP",
+                                              h5("Select School of Interest"))
+              ),
+            #sidebarMenu(
+             #   menuItem("Boxplots", tabName = "boxplots"),
+              #  menuItem("Histograms", tabName = "histograms")
+              #),
+              
+
+            #dashboardBody(
+             #   tabItems(
+              #    tabItem(tabName = "boxplots",
+              
+                
+         # selectizeInput("sex", "sex", selected = "F", choices = levels(as.factor(dat$sex))),
+                  box(selectInput("var","Plot Our Dichotomous Variables",
+                        choices = c("school","address","Pstatus","schoolsup", "famsup", "paid", "activities", "nursery", "higher", "romantic"), selected = "higher"),
+                      plotOutput("edaPlot"),
+                      downloadButton("downloadEdaPlot", "Download as png")),
+                  box(selectInput("var2","Plot Our Ranked Variables",
                         choices = c("famrel", "freetime", "goout", "Dalc", "Walc", "health"), selected = "famrel"),
-            plotOutput("edaPlot2"),
-            downloadButton("downloadEdaPlot2", "Download as png")),
-          box(selectInput("responses", "Summary of Semester grades and overall grade",
+                      plotOutput("edaPlot2"),
+                      downloadButton("downloadEdaPlot2", "Download as png")),
+                  box(selectInput("responses", "Summary of Semester grades and overall grade",
                         choices = c("G1","G2","G3")),
-            plotOutput("sumPlot"),
-            downloadButton("downloadSumPlot", "Download as png")),
-          box(plotOutput("corPlot"),
-              downloadButton("downloadCorPlot", "Download as png"))
-          ),
+                      plotOutput("sumPlot"),
+                      downloadButton("downloadSumPlot", "Download as png")),
+                  box(plotOutput("corPlot"),
+                      downloadButton("downloadCorPlot", "Download as png"))
+                  #),
+
+                #)
+         #)
+         
+          ) # close fluid page
+         ), # close eda tab
         
         
         
@@ -80,24 +101,38 @@ shinyUI(
                     plotOutput('dendoPlot')
                   )
                 )
-                ),
+                ), #close clustering tab
+        
+ 
         
         tabItem(tabName = "modeling",
                 h2("Setup Some Models for our data"),
-                h4("For the response I am going to use the final grades.")
-                ),
+                box(selectizeInput("response", "Choose  a Response Variable", 
+                               choices =  c(names(dat[31:33])), selected = "G3"),
+                selectizeInput("allvar1", "Choose the First Predictor Variable", 
+                               choices =  c(names(dat[1:30])), selected = "school"),
+                selectizeInput("allvar2", "Choose the Second Predictor Variable", 
+                               choices =  c(names(dat[1:30])), selected = "sex"),
+                selectizeInput("allvar3", "Choose the Third Predictor Variable", 
+                               choices =  c(names(dat[1:30])), selected = "higher"),
+                selectizeInput("allvar4", "Choose the Fourth Predictor Variable", 
+                               choices =  c(names(dat[1:30])), selected = "failures"),
+                selectizeInput("allvar5", "Choose the Fifth Predictor Variable", 
+                               choices =  c(names(dat[1:30])), selected = "goout")),
+                box(verbatimTextOutput("glmMod"))
+                ), # close modeling tab
         
         
         
         
         
-        tabItem(tabName = "rawdat",
+        tabItem(tabName = "rawdat", fluidPage(
                 h2("Our Raw Data"),
             #   numericInput("maxrows", "Rows to show", 25),
           fluidRow(
               box(DT::dataTableOutput("datTable"),
                   downloadButton("downloadData", "Download as CSV"))
-           ) # Close fluid row
+           )) # Close fluid row and page
         ) # close data tab
     ) # close tab items 
   ) # close dash body
