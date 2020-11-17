@@ -140,10 +140,10 @@ shinyUI(
           fluidPage(
                 h2("Our Raw Data"),
             #   numericInput("maxrows", "Rows to show", 25),
-            fluidRow(
+            
               box(DT::dataTableOutput("datTable"),
                   downloadButton("downloadData", "Download as CSV"))
-           )) # Close fluid row and page
+           ) # Close fluid row and page
         ) # close data tab
     ) # close tab items 
   ) # close dash body

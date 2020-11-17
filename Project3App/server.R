@@ -213,7 +213,7 @@ shinyServer(function(input, output, session) {
   
 # Raw Data tab
   output$datTable <- DT::renderDataTable({
-    datatable(dat)
+    datatable(dat,options = list(scrollX = TRUE))
   })
   
   output$downloadData <- downloadHandler(
