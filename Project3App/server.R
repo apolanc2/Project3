@@ -170,8 +170,9 @@ shinyServer(function(input, output, session) {
   datTest <- dat[test,]
   # our formula using user inputs for our variables
   meanform <- reactive({
-    as.formula(paste(input$response, "~", input$allvar1, "+", input$allvar2, "+", input$allvar3, "+", input$allvar4, "+", input$allvar5))
-  })
+   # as.formula(paste(input$response, "~", input$allvar1, "+", input$allvar2, "+", input$allvar3, "+", input$allvar4, "+", input$allvar5))
+     as.formula(paste(input$response, "~", paste(input$allvar1, collapse = "+"), sep = ""))
+    })
   # fit1 <- gls(data = dat, model = meanform, method = "REML")
   fit1<- reactive({
     if(input$model == "GLM"){
