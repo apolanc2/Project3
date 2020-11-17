@@ -139,11 +139,15 @@ shinyUI(
         tabItem(tabName = "rawdat", 
           fluidPage(
                 h2("Our Raw Data"),
+                checkboxInput("schoolFilter2", h4("Subset by school?")),
+                conditionalPanel(condition = ("input.schoolFilter2==true"), 
+                                 selectizeInput("school2", choices = c("GP", "MS"),selected = "GP",
+                                                h5("Select School of Interest"))),
             #   numericInput("maxrows", "Rows to show", 25),
-            
+            fluidRow(
               box(DT::dataTableOutput("datTable"),
                   downloadButton("downloadData", "Download as CSV"))
-           ) # Close fluid row and page
+          )) # Close fluid row and page
         ) # close data tab
     ) # close tab items 
   ) # close dash body

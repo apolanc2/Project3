@@ -213,7 +213,13 @@ shinyServer(function(input, output, session) {
   
 # Raw Data tab
   output$datTable <- DT::renderDataTable({
+    if(input$schoolFilter2==0){
     datatable(dat,options = list(scrollX = TRUE))
+    }
+    else{
+      schoolDat <- dat %>% filter(school == input$school2)
+      datatable(schoolDat,options = list(scrollX = TRUE))
+    }
   })
   
   output$downloadData <- downloadHandler(
