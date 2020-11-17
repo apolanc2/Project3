@@ -46,7 +46,9 @@ shinyUI(
            This data captures many socio-economic and personal variables to 
            determine whether it affects the grades of students in math and portuguese. 
            The data was separated by subject and I decided to analyze the math subject.
-           Grades were collected for each student for the first period, second period, and final grade.")
+           Grades were collected for each student for the first period, second period, and final grade."),
+        h2("Information about the variables"),
+        dataTableOutput("infoTab")
         ),
         
   

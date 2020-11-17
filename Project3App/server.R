@@ -25,6 +25,13 @@ library(qtlcharts)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
+  # read in our info file
+  info <- read.csv(file = "student.csv", sep = ";", header = FALSE)
+  info$V1<- substr(info$V1,3,nchar(info$V1))
+  names(info) <- c("Variable Name", "Description")
+  output$infoTab <- renderDataTable(
+    datatable(info)
+  )
   # read in our data. local directory not working at the moment and need full path
   dat <- read.csv(file = "student-mat.csv", sep = ";")
   dat$famrel <- as.factor(dat$famrel)
