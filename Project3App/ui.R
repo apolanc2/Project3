@@ -16,6 +16,11 @@ library(tidyverse)
 library(corrplot)
 library(rgl)
 library(tree)
+library(nlme)
+library(caret)
+library(ggplot2)
+library(plotly)
+library(ggcorrplot)
 
 shinyUI(
   dashboardPage(
@@ -105,7 +110,8 @@ shinyUI(
         
  
         
-        tabItem(tabName = "modeling",
+        tabItem(tabName = "modeling", 
+              fluidPage(
                 h2("Setup Some Models for our data"),
                 box(selectizeInput("response", "Choose  a Response Variable", 
                                choices =  c(names(dat[31:33])), selected = "G3"),
@@ -119,19 +125,22 @@ shinyUI(
                                choices =  c(names(dat[1:30])), selected = "failures"),
                 selectizeInput("allvar5", "Choose the Fifth Predictor Variable", 
                                choices =  c(names(dat[1:30])), selected = "goout")),
-                box(verbatimTextOutput('glmMod')),
+                box(selectizeInput("model", "Choose Type of Fit", 
+                                   choices =  c("GLM","ClassificationTree", "RandomForest", "BaggedTree")),
+                  verbatimTextOutput('modResults')),
                 box(tableOutput('pred'))
-                
+                   ) #close fluid page
                 ), # close modeling tab
         
         
         
         
         
-        tabItem(tabName = "rawdat", fluidPage(
+        tabItem(tabName = "rawdat", 
+          fluidPage(
                 h2("Our Raw Data"),
             #   numericInput("maxrows", "Rows to show", 25),
-          fluidRow(
+            fluidRow(
               box(DT::dataTableOutput("datTable"),
                   downloadButton("downloadData", "Download as CSV"))
            )) # Close fluid row and page

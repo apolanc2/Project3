@@ -18,9 +18,12 @@ library(rgl)
 library(tree)
 library(nlme)
 library(caret)
+library(ggplot2)
+library(plotly)
+library(ggcorrplot)
 
 # Define server logic required to draw a histogram
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
   # read in our data. local directory not working at the moment and need full path
   dat <- read.csv(file = 'C:/Users/nelso/Documents/NCSU/ST 558/Project3/Project3/student-mat.csv', sep = ";")
   dat$famrel <- as.factor(dat$famrel)
@@ -99,8 +102,16 @@ shinyServer(function(input, output) {
  # 4th plot
   cor_plot <- reactive({
     newData <- getData()
-    correlations <- cor(select_if(newData,is.numeric))
-    corrplot(correlations)
+    corData <- select_if(newData,is.numeric)
+    correlations <- cor(corData)
+    pvals <- cor_pmat(corData)
+    corr.plot <- ggcorrplot(
+      correlations, hc.order = TRUE, type = "lower", outline.col = "white",
+      p.mat = pvals
+    )
+    ggplotly(corr.plot)
+    #cplot <- corrplot(correlations)
+    #ggplotly(correlations)
   })
   output$corPlot <- renderPlot({
     cor_plot()
@@ -152,21 +163,51 @@ shinyServer(function(input, output) {
   })
   # fit1 <- gls(data = dat, model = meanform, method = "REML")
   fit1<- reactive({
-    train(data = dat, meanform(), method = "glm", 
-               preProcess = c("center", "scale"),
-               trControl = trainControl(method="cv",number=10))
+    if(input$model == "GLM"){
+      train(data = dat, meanform(), method = "glm", 
+            preProcess = c("center", "scale"),
+            trControl = trainControl(method="cv",number=10))
+    }
+    else if(input$model == "ClassificationTree"){
+      train(data = dat, meanform(), method = "rpart", 
+            preProcess = c("center", "scale"),
+            trControl = trainControl(method="cv"))
+    }
+    else if(input$model == "RandomForest"){
+      train(data = dat, meanform(), method = "rf", 
+            preProcess = c("center", "scale"),
+            trControl = trainControl(method="cv"))
+    }
+    else {
+      train(data = dat, meanform(), method = "treebag", 
+            preProcess = c("center", "scale"),
+            trControl = trainControl(method="cv"))
+   }
+  
   })
- output$glmMod <- renderPrint({
-   summary(fit1())
+
+  
+ output$modResults <- renderPrint({
+   fit1()$results
+   #testFit <- datTest %>% select(input$response, input$allvar1, input$allvar2, input$allvar3,input$allvar4, input$allvar5)
+   #predFit <- predict(fit1(), newdata = testFit,se.fit = TRUE)
+   #testResp <- testFit[,1]
+   #postResample(predFit$fit, obs = testResp)   
+   #confMat <- confusionMatrix(predFit, testFit[,1])
+   #confMat
+ 
  })
  
  output$pred <- renderTable({
    testFit <- datTest %>% select(input$response, input$allvar1, input$allvar2, input$allvar3,input$allvar4, input$allvar5)
-   predFit <- predict(fit1(), newdata = testFit,se.fit = TRUE)
+   predFit <- predict(fit1(), newdata = testFit)
    predSum <- round(summary(predFit),4)
    resp <- datTrain %>% select(input$response)
+   testResp <- testFit[,1]
    trainSum <- summary(resp)
-   cbind(trainSum,predSum)
+  # cbind(trainSum,predSum)
+   confMat <- confusionMatrix(predFit, testFit[,1])
+   confMat$overall
     })
  
   
