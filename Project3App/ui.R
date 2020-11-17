@@ -21,6 +21,7 @@ library(caret)
 library(ggplot2)
 library(plotly)
 library(ggcorrplot)
+library(shinyWidgets)
 
 shinyUI(
   dashboardPage(
@@ -38,7 +39,14 @@ shinyUI(
       tabItems(
         tabItem(tabName = "about",
                 h2("About This Project"),
-        h4("This project is about the student data set. This data set captures many socio-economic and personal variables to determine whether it affects the grades of students in math.")
+                h4("This data set comes from the", 
+                   a(href = "https://archive.ics.uci.edu/ml/datasets/Student+Performance", "UCI machine learning repository")),
+                br(),
+        h4("This project is about the student performance data set. 
+           This data captures many socio-economic and personal variables to 
+           determine whether it affects the grades of students in math and portuguese. 
+           The data was separated by subject and I decided to analyze the math subject.
+           Grades were collected for each student for the first period, second period, and final grade.")
         ),
         
   
@@ -74,9 +82,15 @@ shinyUI(
                   box(selectInput("responses", "Summary of Semester grades and overall grade",
                         choices = c("G1","G2","G3")),
                       plotOutput("sumPlot"),
-                      downloadButton("downloadSumPlot", "Download as png")),
-                  box(plotOutput("corPlot"),
-                      downloadButton("downloadCorPlot", "Download as png"))
+                      downloadBttn("downloadSumPlot", "Download as png")),
+                 
+                    box(fluidRow(h4("Correlation Plot for Numeric Variables"),
+                                 h6("Hover over points to get more details!"),
+                      plotlyOutput("corPlot")#, 
+                      #           tags$h4("Download"),
+                      #downloadBttn(outputId = "downloadCorPlot", style = "bordered", color = "primary")
+                      )
+                  )
                   #),
 
                 #)

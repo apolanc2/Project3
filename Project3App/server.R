@@ -21,11 +21,12 @@ library(caret)
 library(ggplot2)
 library(plotly)
 library(ggcorrplot)
+library(qtlcharts)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   # read in our data. local directory not working at the moment and need full path
-  dat <- read.csv(file = 'C:/Users/nelso/Documents/NCSU/ST 558/Project3/Project3/student-mat.csv', sep = ";")
+  dat <- read.csv(file = "student-mat.csv", sep = ";")
   dat$famrel <- as.factor(dat$famrel)
   dat$freetime <- as.factor(dat$freetime)
   dat$goout <- as.factor(dat$goout)
@@ -109,11 +110,14 @@ shinyServer(function(input, output, session) {
       correlations, hc.order = TRUE, type = "lower", outline.col = "white",
       p.mat = pvals
     )
-    ggplotly(corr.plot)
-    #cplot <- corrplot(correlations)
+   # iplotCorr(corData,reorder=TRUE,chartOpts=list(cortitle="Correlation matrix",
+     #                                             scattitle="Scatterplot"))
+    ggplotly(corr.plot) %>% layout(xaxis = list(autorange = TRUE),
+                               yaxis = list(autorange = TRUE))
+   # cplot <- corrplot(correlations)
     #ggplotly(correlations)
   })
-  output$corPlot <- renderPlot({
+  output$corPlot <- renderPlotly({
     cor_plot()
   })
   output$downloadCorPlot <- downloadHandler(
