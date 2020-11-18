@@ -16,7 +16,6 @@ library(tidyverse)
 library(corrplot)
 library(rgl)
 library(tree)
-library(nlme)
 library(caret)
 library(ggplot2)
 library(plotly)
@@ -95,22 +94,48 @@ shinyServer(function(input, output, session) {
       ggsave(file, plot= eda_plot2(),device = "png")
     })
  # 3rd plot 
-  # box plot for response values for each school
-  sum_plot <- reactive({
-    newData <- getData()
-    ggplot(data = newData,aes_string(y=input$responses)) + 
-      geom_boxplot(position = "dodge", fill = "purple", aes(x = school))
-  })
-  output$sumPlot <- renderPlot({
-    sum_plot()
-  })  
-  output$downloadSumPlot <- downloadHandler(
-    filename = function() {
-      "Summary-Plot.png"
-    },
-    content = function(file) {
-      ggsave(file, plot = sum_plot(),device = "png")
+  observe({
+    # table will update based on the check box options
+    x <- input$inCheckboxGroup
+    resChoice <- dat %>% select(input$inCheckboxGroup)
+    # Can use character(0) to remove all choices
+    if (is.null(x))
+      x <- character(0)
+    # the check box will update the options for the box plot
+    updateSelectInput(session, "inSelect",
+                      label = paste("Select Response Variable to Plot"),
+                      choices = x,
+                      selected = tail(x, 1)
+    )
+    # create summary table
+    summ <- lapply(resChoice , function(x) rbind( mean = mean(x) ,
+                                                  sd = sd(x) ,
+                                                  median = median(x) ,
+                                                  minimum = min(x) ,
+                                                  maximum = max(x)) 
+             ) 
+    output$respTab <- renderTable({
+      summ <- data.frame(summ)
+      summ<- cbind("Stat"=c("Mean", "SD", "Median", "Min", "Max"),summ)
+      summ
     })
+    sum_plot <- reactive({
+      newData <- getData()
+      ggplot(data = dat,aes_string(y=input$inSelect)) + 
+        geom_boxplot(position = "dodge", fill = "purple", aes(x = school))
+    })
+    output$sumPlot<- renderPlot({
+      sum_plot()
+    })
+    output$downloadSumPlot <- downloadHandler(
+      filename = function() {
+        "Summary-Plot.png"
+      },
+      content = function(file) {
+        ggsave(file, plot = sum_plot(),device = "png")
+      })
+  })
+
  # 4th plot
   cor_plot <- reactive({
     correlations <- cor(datNum)

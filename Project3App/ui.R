@@ -16,7 +16,6 @@ library(tidyverse)
 library(corrplot)
 library(rgl)
 library(tree)
-library(nlme)
 library(caret)
 library(ggplot2)
 library(plotly)
@@ -75,8 +74,7 @@ shinyUI(
            a(href = "https://archive.ics.uci.edu/ml/datasets/Student+Performance", "UCI machine learning repository")),
   
         ), # close about tab
-        
-  
+
         
         tabItem(tabName = "eda", 
           fluidPage(
@@ -95,11 +93,14 @@ shinyUI(
                         choices = c("famrel", "freetime", "goout", "Dalc", "Walc", "health"), selected = "famrel"),
                       plotOutput("edaPlot2"),
                       downloadBttn("downloadEdaPlot2", "Download as png")),
-                  box(selectInput("responses", "Summary of Semester grades and overall grade",
-                        choices = c("G1","G2","G3")),
+                  box(checkboxGroupInput("inCheckboxGroup", "Select the Response Variables to Summarize",
+                                         c("G1","G2","G3"),
+                                         selected = "G3"),
+                      tableOutput("respTab"),
+                      selectInput("inSelect", "Summary of Semester grades and overall grade",
+                                  choices = c("G1","G2","G3")),
                       plotOutput("sumPlot"),
                       downloadBttn("downloadSumPlot", "Download as png")),
-                 
                     box(fluidRow(h4("Correlation Plot for Numeric Variables"),
                                  h6("Hover over points to get more details!"),
                       plotlyOutput("corPlot") 
@@ -107,10 +108,6 @@ shinyUI(
                      ) # close box
           ) # close fluid page
          ), # close eda tab
-        
-        
-        
-        
         
         
         tabItem(tabName = "pca",
