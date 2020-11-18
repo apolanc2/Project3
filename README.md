@@ -13,6 +13,7 @@ To get this started I used the following packages:
   - plotly  
   - ggcorrplot  
   - qtlcharts    
+
 Quickly install these pacakages with:   
  ```
  install.packages(c("shiny", "shinydashboard", "DT", "tidyverse", "corrplot", "rgl", "tree", "caret", "ggplot2", "plotly", "ggcorrplot", "qtlcharts"))
