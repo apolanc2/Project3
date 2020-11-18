@@ -27,6 +27,7 @@ shinyUI(
   dashboardPage(
     dashboardHeader(title = " Project 3: Students"),
     dashboardSidebar(
+      # create tabs
         sidebarMenu(
             menuItem("About", tabName= "about"),
             menuItem("Data Exploration", tabName = "eda"),
@@ -39,17 +40,40 @@ shinyUI(
       tabItems(
         tabItem(tabName = "about",
                 h2("About This Project"),
-                h4("This data set comes from the", 
-                   a(href = "https://archive.ics.uci.edu/ml/datasets/Student+Performance", "UCI machine learning repository")),
-                br(),
+               
         h4("This project is about the student performance data set. 
            This data captures many socio-economic and personal variables to 
            determine whether it affects the grades of students in math and portuguese. 
            The data was separated by subject and I decided to analyze the math subject.
-           Grades were collected for each student for the first period, second period, and final grade."),
+           Grades were collected for each student for the first period, second period, and final grade.
+           In addition to the this, 30 other characteristics were captured. 
+           The below at the bottom of the page shows all of the variables and their descriptions.
+           I have created this app to be able to explore the data and make some predictions."),
+        br(),
+        h3("How to navigate this app"),
+        h4("The Data Exploration tab allows you to see the summaries of the different 
+           variables up against the overall grade response and the grade summaries for each school.
+           These summaries can be saved to your computer!
+           It also shows the correlations of our numeric variables. 
+           This interactive correlation plot allows you to view additional details when hovering over it."),
+        br(),
+        h4("The Principal Component Analysis tab allows you to choose the variables to create principal components. 
+           These are then displayed nicely in a biplot."),
+        br(),
+        h4("The Modeling tab allows you to choose the response variable and the predictor 
+           variables to create a model formula. Then you can select the type of model you are interested in:
+           a generalized linear model, classification tree, random forrest, and a bagged tree.
+           The results for the selected method will be displayed. Using the same model, 
+           you can select the desired values for your predictor variables and a prediction will be displayed."),
+        br(),
+        h4("Lastly, the Data tab allows you to look at the raw data and subset by the school.
+           This data can also be downloaded to your computer."),
         h2("Information about the variables"),
-        dataTableOutput("infoTab")
-        ),
+        dataTableOutput("infoTab"),
+        h4("For more information about this data it can be found at", 
+           a(href = "https://archive.ics.uci.edu/ml/datasets/Student+Performance", "UCI machine learning repository")),
+  
+        ), # close about tab
         
   
         
@@ -89,7 +113,7 @@ shinyUI(
         
         
         tabItem(tabName = "pca",
-                h2("Principal Analysis Components"),
+                h2("Principal Component Analysis"),
                 pageWithSidebar(
                   headerPanel(''),
                   sidebarPanel(
@@ -97,18 +121,13 @@ shinyUI(
                                    choices =  c(names(datNum[1:12])), 
                                    selected = c("failures","goout","studytime", "freetime"), 
                                    multiple = T)
-                    #selectInput('xcol', 'X Variable', names(datNum)),
-                    #selectInput('ycol', 'Y Variable', names(datNum),
-                     #           selected=names(datNum)[[2]]),
-                    #numericInput('clusters', 'Cluster count', 3,
-                        #         min = 1, max = 9)
-                  ),
+                  ), #close sidebarpanel
                   mainPanel(
                     verbatimTextOutput('pcOut'),
                     plotOutput('biPlot'),
                     dataTableOutput('pcaTab')
-                  )
-                )
+                  )# close mainpanel
+                ) # close pagewithsidebar
                 ), #close clustering tab
         
 
@@ -117,12 +136,14 @@ shinyUI(
           fluidPage(
             panel(
              h2("Setup Some Models for our data"),
+             # choose between our 3 response variables
              box(selectizeInput("response", "Choose  a Response Variable", 
                                choices =  c(names(dat[31:33])), selected = "G3"),
+                 # user to choose the predictor variables
                  selectizeInput("allvar1", "Choose the Predictor Variables", 
                                choices =  c(names(dat[1:30])), 
                                selected = c("school","sex","higher", "failures","goout"), 
-                               multiple = T),
+                               multiple = T), # select as many as desired
                  uiOutput('modForm')
                 ), # close box
              box(selectizeInput("model", "Choose Type of Fit", 
@@ -132,8 +153,8 @@ shinyUI(
                   )), # close box and panel
           fluidRow(
             panel(h2("Predictions from the above model"),
-
-              box(
+              box( # create conditional panel for each variable to be able to input values for prediction
+                # must include a null value to avoid any unselected variables to be included
                 conditionalPanel(condition=("input.allvar1.includes('school')"), 
                                  selectizeInput("predschool", "Select School", 
                                                 choices = c("",levels(as.factor(dat$school))),
@@ -330,13 +351,10 @@ shinyUI(
       ), # close modeling tab
         
         
-        
-        
-        
         tabItem(tabName = "rawdat", 
           fluidPage(
                 h2("Our Raw Data"),
-                checkboxInput("schoolFilter2", h4("Subset by school?")),
+                checkboxInput("schoolFilter2", h4("Subset by school?")), #subset our data by school if desired
                 conditionalPanel(condition = ("input.schoolFilter2==true"), 
                                  selectizeInput("school2", choices = c("GP", "MS"),selected = "GP",
                                                 h5("Select School of Interest"))),

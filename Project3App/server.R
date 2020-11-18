@@ -68,30 +68,30 @@ shinyServer(function(input, output, session) {
 
   
 # EDA tab
-  getData <- reactive({
+  getData <- reactive({ 
     if(input$schoolFilter == 0){
       newData <- dat
-    }
-      else{newData <- dat %>% filter(school == input$school)}
+    } # if desired filter all data by school 
+      else{newData <- dat %>% filter(school == input$school)} 
   })
 
   
  # 1st plot
   eda_plot <- reactive({
-    newData <- getData()
+    newData <- getData() # our data or filtered data
      ggplot(data = newData,aes_string(x=input$var)) + 
        geom_boxplot(position = "dodge", aes(y = G3, fill = sex))
   })
   output$edaPlot <- renderPlot({
       eda_plot()
     }) 
-  
+  # download plot
   output$downloadEdaPlot <- downloadHandler(
     filename = function() {
       "EDA-Plot.png"
     },
     content = function(file) {
-      ggsave(file, plot= eda_plot(),device = "png")
+      ggsave(file, plot= eda_plot(),device = "png") 
     })
   
  # 2nd plot 
@@ -132,37 +132,35 @@ shinyServer(function(input, output, session) {
   cor_plot <- reactive({
     correlations <- cor(datNum)
     pvals <- cor_pmat(datNum)
-    corr.plot <- ggcorrplot(
+    corr.plot <- ggcorrplot(  # used ggcorrplot to be able to make the correlation plot interactive
       correlations, hc.order = TRUE, type = "lower", outline.col = "white",
       p.mat = pvals
     )
     ggplotly(corr.plot) %>% layout(xaxis = list(autorange = TRUE),
                                yaxis = list(autorange = TRUE))
   })
-  
+  # render interactive plot
   output$corPlot <- renderPlotly({
     cor_plot()
   })
   
 
 # Cluster tab
+  # filter data for selected variables
   datSelect <- reactive({
     datPC <-  datNum %>% select(input$pcVars)
   })
+  # create principal components
   output$pcOut <- renderPrint({
     PCs <- prcomp(datSelect(), center = TRUE, scale = TRUE)
     PCs
-
   })
+  # create biplot
   output$biPlot <- renderPlot({
     PCs <- prcomp(datSelect(), center = TRUE, scale = TRUE)
     biplot(PCs,xlabs = rep(",", nrow(datSelect())))
   })
 
-  #output$pcaTab <- renderDataTable({
-   # datatable(datNum)
-#  })
-  
 
   
 # Modeling tab
@@ -175,10 +173,9 @@ shinyServer(function(input, output, session) {
   datTest <- dat[test,]
   # our formula using user inputs for our variables
   meanform <- reactive({
-   # as.formula(paste(input$response, "~", input$allvar1, "+", input$allvar2, "+", input$allvar3, "+", input$allvar4, "+", input$allvar5))
      as.formula(paste(input$response, "~", paste(input$allvar1, collapse = "+"), sep = ""))
     })
-  # fit1 <- gls(data = dat, model = meanform, method = "REML")
+  # used conditional statements to change the fit method based on user input
   fit1<- reactive({
     if(input$model == "GLM"){
       train(data = dat, meanform(), method = "glm", 
@@ -202,15 +199,16 @@ shinyServer(function(input, output, session) {
    }
   
   })
+  # used mathJax to display the formula
   output$modForm <- renderUI({
     withMathJax(input$response," =", paste(input$allvar1, collapse = "+") )
   })
-  
+  # print results of fit
  output$modResults <- renderPrint({
    fit1()$results
  })
 
-
+ # create the new data to predict on using the user input
  vals <- reactive({
    inputPred <- data.frame(input$predschool,input$predsex,input$predage, input$predaddress, input$predfamsize, 
      input$predPstatus, input$predMedu, input$predFedu,input$predMjob,input$predFjob,
@@ -222,38 +220,25 @@ shinyServer(function(input, output, session) {
   names(inputPred) <- c(names(dat[1:30]))
   inputPred  
  })
- 
-
+ # use new data to make prediction
  output$pred1 <- renderPrint({
     predDat <- vals() %>% select_if(~ !any(is.na(.)))
     predict(fit1(), newdata = predDat)
    })
  
- #output$pred <- renderTable({
-  # testFit <- datTest %>% select(input$response, input$allvar1, input$allvar2, input$allvar3,input$allvar4, input$allvar5)
-   #predFit <- predict(fit1(), newdata = testFit)
-   #predSum <- round(summary(predFit),4)
-   #resp <- datTrain %>% select(input$response)
-   #testResp <- testFit[,1]
-   #trainSum <- summary(resp)
-  # cbind(trainSum,predSum)
-  # confMat <- confusionMatrix(predFit, testFit[,1])
-  # confMat$overall
-   #vals() %>% select_if(~ !any(is.na(.)))
-    #})
- 
   
-# Raw Data tab
+# Data tab
+ # create data table with the filter options
   output$datTable <- DT::renderDataTable({
     if(input$schoolFilter2==0){
     datatable(dat,options = list(scrollX = TRUE))
     }
     else{
       schoolDat <- dat %>% filter(school == input$school2)
-      datatable(schoolDat,options = list(scrollX = TRUE))
+      datatable(schoolDat,options = list(scrollX = TRUE)) # a lot of variables requires a scrolling option
     }
   })
-  
+  # download the data / subset data
   output$downloadData <- downloadHandler(
     filename = function() {
       "student-data.csv"
