@@ -115,21 +115,18 @@ shinyUI(
         
         tabItem(tabName = "pca",
                 h2("Principal Component Analysis"),
-                pageWithSidebar(
-                  headerPanel(''),
-                  sidebarPanel(
+                  box(
                     selectizeInput("pcVars", "Choose the Variables", 
                                    choices =  c(names(datNum[1:12])), 
                                    selected = c("failures","goout","studytime", "freetime"), 
                                    multiple = T)
-                  ), #close sidebarpanel
+                  ), # close box
                   mainPanel(
                     verbatimTextOutput('pcOut'),
                     plotOutput('biPlot'),
                     dataTableOutput('pcaTab')
                   )# close mainpanel
-                ) # close pagewithsidebar
-                ), #close clustering tab
+                ), # close clustering tab
         
 
         

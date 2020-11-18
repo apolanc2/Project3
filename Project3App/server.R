@@ -59,9 +59,8 @@ shinyServer(function(input, output, session) {
     } # if desired filter all data by school 
       else{newData <- dat %>% filter(school == input$school)} 
   })
-
-  
  # 1st plot
+  # box plot for binary variables for each sex
   eda_plot <- reactive({
     newData <- getData() # our data or filtered data
      ggplot(data = newData,aes_string(x=input$var)) + 
@@ -78,8 +77,8 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       ggsave(file, plot= eda_plot(),device = "png") 
     })
-  
  # 2nd plot 
+  # box plot for numeric variables for each sex
   eda_plot2 <- reactive({
     newData <- getData()
     ggplot(data = newData,aes_string(x=input$var2)) + 
@@ -95,8 +94,8 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       ggsave(file, plot= eda_plot2(),device = "png")
     })
-  
- # 3rd plot
+ # 3rd plot 
+  # box plot for response values for each school
   sum_plot <- reactive({
     newData <- getData()
     ggplot(data = newData,aes_string(y=input$responses)) + 
@@ -112,7 +111,6 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       ggsave(file, plot = sum_plot(),device = "png")
     })
-  
  # 4th plot
   cor_plot <- reactive({
     correlations <- cor(datNum)
@@ -145,7 +143,6 @@ shinyServer(function(input, output, session) {
     PCs <- prcomp(datSelect(), center = TRUE, scale = TRUE)
     biplot(PCs,xlabs = rep(",", nrow(datSelect())))
   })
-
 
   
 # Modeling tab
@@ -182,7 +179,6 @@ shinyServer(function(input, output, session) {
             preProcess = c("center", "scale"),
             trControl = trainControl(method="cv"))
    }
-  
   })
   # used mathJax to display the formula
   output$modForm <- renderUI({
@@ -192,7 +188,6 @@ shinyServer(function(input, output, session) {
  output$modResults <- renderPrint({
    fit1()$results
  })
-
  # create the new data to predict on using the user input
  vals <- reactive({
    inputPred <- data.frame(input$predschool,input$predsex,input$predage, input$predaddress, input$predfamsize, 
