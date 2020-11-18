@@ -197,29 +197,64 @@ shinyServer(function(input, output, session) {
    }
   
   })
-
+  output$modForm <- renderUI({
+    withMathJax(input$response," =", paste(input$allvar1, collapse = "+") )
+  })
   
  output$modResults <- renderPrint({
    fit1()$results
-   #testFit <- datTest %>% select(input$response, input$allvar1, input$allvar2, input$allvar3,input$allvar4, input$allvar5)
-   #predFit <- predict(fit1(), newdata = testFit,se.fit = TRUE)
-   #testResp <- testFit[,1]
-   #postResample(predFit$fit, obs = testResp)   
-   #confMat <- confusionMatrix(predFit, testFit[,1])
-   #confMat
- 
  })
  
+ meanform2 <- reactive({
+   as.formula(paste(input$predresponse, "~", paste(input$predvars, collapse = "+"), sep = ""))
+ })
+ 
+ output$predForm <- renderUI({
+   withMathJax(input$predresponse," =", paste(input$predvars, collapse = "+") )
+ })
+ 
+ 
+ #res_mod <- callModule(
+  # module = selectizeGroupServer,
+  # id = "pred_vars",
+  # data = dat,
+  # vars = vars_r
+# )
+
+
+ vals <- reactive({
+   inputPred <- data.frame(input$predschool,input$predsex,input$predage, input$predaddress, input$predfamsize, 
+     input$predPstatus, input$predMedu, input$predFedu,input$predMjob,input$predFjob,
+     input$predReason,input$predGuardian, input$predTraveltime, input$predStudytime,
+     input$predFailures, input$predSchoolsup, input$predFamsup,input$predPaid, 
+     input$predActivities,input$predNursery,input$predHigher,input$predInternet,
+     input$predRomantic,input$predFamrel, input$predFreetime,input$predGoout,input$predDalc,
+     input$predWalc,input$predHealth,input$predAbsences)
+  names(inputPred) <- c(names(dat[1:30]))
+  inputPred  
+ })
+ 
+  # observe({updateSelectizeInput(session,"predvars")
+   #  }) 
+
+ output$pred1 <- renderPrint({
+  # as.vector(vars_r())
+  meanform2()
+   # fit2 <- 
+   # predict(fit1, newdata = )
+   })
+ 
  output$pred <- renderTable({
-   testFit <- datTest %>% select(input$response, input$allvar1, input$allvar2, input$allvar3,input$allvar4, input$allvar5)
-   predFit <- predict(fit1(), newdata = testFit)
-   predSum <- round(summary(predFit),4)
-   resp <- datTrain %>% select(input$response)
-   testResp <- testFit[,1]
-   trainSum <- summary(resp)
+  # testFit <- datTest %>% select(input$response, input$allvar1, input$allvar2, input$allvar3,input$allvar4, input$allvar5)
+   #predFit <- predict(fit1(), newdata = testFit)
+   #predSum <- round(summary(predFit),4)
+   #resp <- datTrain %>% select(input$response)
+   #testResp <- testFit[,1]
+   #trainSum <- summary(resp)
   # cbind(trainSum,predSum)
-   confMat <- confusionMatrix(predFit, testFit[,1])
-   confMat$overall
+  # confMat <- confusionMatrix(predFit, testFit[,1])
+  # confMat$overall
+   vals() %>% select_if(~ !any(is.na(.)))
     })
  
   
