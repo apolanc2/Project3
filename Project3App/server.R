@@ -34,6 +34,14 @@ shinyServer(function(input, output, session) {
   )
   # read in our data. local directory not working at the moment and need full path
   dat <- read.csv(file = "student-mat.csv", sep = ";")
+  # convert numeric values to factors
+  dat$age <- as.factor(dat$age)
+  dat$Fedu <- as.factor(dat$Fedu)
+  dat$Medu <- as.factor(dat$Medu)
+  dat$traveltime <- as.factor(dat$traveltime)
+  dat$studytime <- as.factor(dat$studytime)
+  dat$Fedu <- as.factor(dat$Fedu)
+  dat$failures <- as.factor(dat$failures)
   dat$famrel <- as.factor(dat$famrel)
   dat$freetime <- as.factor(dat$freetime)
   dat$goout <- as.factor(dat$goout)
@@ -41,13 +49,23 @@ shinyServer(function(input, output, session) {
   dat$Walc <- as.factor(dat$Walc)
   dat$health <- as.factor(dat$health)
   
-  # output the raw data
-  #output$edaTable <- renderTable({
-   # var <- input$var
-    #datNew <- dat[, c("sex", var),drop = FALSE]
-  # tab
- #table(dat$sex, dat[[var]])
-  # table(input$sex,dat$failures)
+  # new dataset for numeric values for correlations and PCA 
+  datNum <- dat %>% select(1:30) %>% select_if(is.factor)
+  datNum$age <- as.numeric(as.character(datNum$age))
+  datNum$Fedu <- as.numeric(as.character(datNum$Fedu))
+  datNum$Medu <- as.numeric(as.character(datNum$Medu))
+  datNum$traveltime <- as.numeric(as.character(datNum$traveltime))
+  datNum$studytime <- as.numeric(as.character(datNum$studytime))
+  datNum$Fedu <- as.numeric(as.character(datNum$Fedu))
+  datNum$failures <- as.numeric(as.character(datNum$failures))
+  datNum$famrel <- as.numeric(as.character(datNum$famrel))
+  datNum$freetime <- as.numeric(as.character(datNum$freetime))
+  datNum$goout <- as.numeric(as.character(datNum$goout))
+  datNum$Dalc <- as.numeric(as.character(datNum$Dalc))
+  datNum$Walc <- as.numeric(as.character(datNum$Walc))
+  datNum$health <- as.numeric(as.character(datNum$health))
+  
+
   
 # EDA tab
   getData <- reactive({
@@ -75,6 +93,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       ggsave(file, plot= eda_plot(),device = "png")
     })
+  
  # 2nd plot 
   eda_plot2 <- reactive({
     newData <- getData()
@@ -91,6 +110,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       ggsave(file, plot= eda_plot2(),device = "png")
     })
+  
  # 3rd plot
   sum_plot <- reactive({
     newData <- getData()
@@ -107,58 +127,43 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       ggsave(file, plot = sum_plot(),device = "png")
     })
+  
  # 4th plot
   cor_plot <- reactive({
-    newData <- getData()
-    corData <- select_if(newData,is.numeric)
-    correlations <- cor(corData)
-    pvals <- cor_pmat(corData)
+    correlations <- cor(datNum)
+    pvals <- cor_pmat(datNum)
     corr.plot <- ggcorrplot(
       correlations, hc.order = TRUE, type = "lower", outline.col = "white",
       p.mat = pvals
     )
-   # iplotCorr(corData,reorder=TRUE,chartOpts=list(cortitle="Correlation matrix",
-     #                                             scattitle="Scatterplot"))
     ggplotly(corr.plot) %>% layout(xaxis = list(autorange = TRUE),
                                yaxis = list(autorange = TRUE))
-   # cplot <- corrplot(correlations)
-    #ggplotly(correlations)
   })
+  
   output$corPlot <- renderPlotly({
     cor_plot()
   })
-  output$downloadCorPlot <- downloadHandler(
-    filename = function() {
-      "Corr-Plot.png"
-    },
-    content = function(file) {
-      ggsave(file, plot = cor_plot(),device = "png")
-    })
+  
 
 # Cluster tab
-  datNum <- select_if(dat,is.numeric)
-  selectedData <- reactive({
-    datNum[, c(input$xcol, input$ycol)]
+  datSelect <- reactive({
+    datPC <-  datNum %>% select(input$pcVars)
   })
+  output$pcOut <- renderPrint({
+    PCs <- prcomp(datSelect(), center = TRUE, scale = TRUE)
+    PCs
+
+  })
+  output$biPlot <- renderPlot({
+    PCs <- prcomp(datSelect(), center = TRUE, scale = TRUE)
+    biplot(PCs,xlabs = rep(",", nrow(datSelect())))
+  })
+
+  #output$pcaTab <- renderDataTable({
+   # datatable(datNum)
+#  })
   
-  clusters <- reactive({
-    kmeans(selectedData(), input$clusters)
-  })
-  
-  output$clusPlot <- renderPlot({
-    palette(c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
-              "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"))
-    
-    par(mar = c(5.1, 4.1, 0, 1))
-    plot(selectedData(),
-         col = clusters()$cluster,
-         pch = 20, cex = 3)
-    points(clusters()$centers, pch = 4, cex = 4, lwd = 4)
-  })
-  output$dendoPlot <- renderPlot({
-    hierclust <- hclust(dist(data.frame(input$xcol,input$ycol)))
-    plot(hierclust,xlab="")
-  })
+
   
 # Modeling tab
   # for reproducibility
@@ -204,22 +209,6 @@ shinyServer(function(input, output, session) {
  output$modResults <- renderPrint({
    fit1()$results
  })
- 
- meanform2 <- reactive({
-   as.formula(paste(input$predresponse, "~", paste(input$predvars, collapse = "+"), sep = ""))
- })
- 
- output$predForm <- renderUI({
-   withMathJax(input$predresponse," =", paste(input$predvars, collapse = "+") )
- })
- 
- 
- #res_mod <- callModule(
-  # module = selectizeGroupServer,
-  # id = "pred_vars",
-  # data = dat,
-  # vars = vars_r
-# )
 
 
  vals <- reactive({
@@ -234,17 +223,13 @@ shinyServer(function(input, output, session) {
   inputPred  
  })
  
-  # observe({updateSelectizeInput(session,"predvars")
-   #  }) 
 
  output$pred1 <- renderPrint({
-  # as.vector(vars_r())
-  meanform2()
-   # fit2 <- 
-   # predict(fit1, newdata = )
+    predDat <- vals() %>% select_if(~ !any(is.na(.)))
+    predict(fit1(), newdata = predDat)
    })
  
- output$pred <- renderTable({
+ #output$pred <- renderTable({
   # testFit <- datTest %>% select(input$response, input$allvar1, input$allvar2, input$allvar3,input$allvar4, input$allvar5)
    #predFit <- predict(fit1(), newdata = testFit)
    #predSum <- round(summary(predFit),4)
@@ -254,8 +239,8 @@ shinyServer(function(input, output, session) {
   # cbind(trainSum,predSum)
   # confMat <- confusionMatrix(predFit, testFit[,1])
   # confMat$overall
-   vals() %>% select_if(~ !any(is.na(.)))
-    })
+   #vals() %>% select_if(~ !any(is.na(.)))
+    #})
  
   
 # Raw Data tab

@@ -30,7 +30,7 @@ shinyUI(
         sidebarMenu(
             menuItem("About", tabName= "about"),
             menuItem("Data Exploration", tabName = "eda"),
-            menuItem("Clustering", tabName = "clustering"),
+            menuItem("Principal Component Analysis", tabName = "pca"),
             menuItem("Modeling", tabName = "modeling"),
             menuItem("Data", tabName = "rawdat")
         )
@@ -61,18 +61,7 @@ shinyUI(
                                selectizeInput("school", choices = c("GP", "MS"),selected = "GP",
                                               h5("Select School of Interest"))
               ),
-            #sidebarMenu(
-             #   menuItem("Boxplots", tabName = "boxplots"),
-              #  menuItem("Histograms", tabName = "histograms")
-              #),
-              
 
-            #dashboardBody(
-             #   tabItems(
-              #    tabItem(tabName = "boxplots",
-              
-                
-         # selectizeInput("sex", "sex", selected = "F", choices = levels(as.factor(dat$sex))),
                   box(selectInput("var","Plot Our Dichotomous Variables",
                         choices = c("school","address","Pstatus","schoolsup", "famsup", "paid", "activities", "nursery", "higher", "romantic"), selected = "higher"),
                       plotOutput("edaPlot"),
@@ -88,16 +77,9 @@ shinyUI(
                  
                     box(fluidRow(h4("Correlation Plot for Numeric Variables"),
                                  h6("Hover over points to get more details!"),
-                      plotlyOutput("corPlot")#, 
-                      #           tags$h4("Download"),
-                      #downloadBttn(outputId = "downloadCorPlot", style = "bordered", color = "primary")
-                      )
-                  )
-                  #),
-
-                #)
-         #)
-         
+                      plotlyOutput("corPlot") 
+                      ) # close fluid row
+                     ) # close box
           ) # close fluid page
          ), # close eda tab
         
@@ -106,261 +88,246 @@ shinyUI(
         
         
         
-        tabItem(tabName = "clustering",
-                h2("Clustering our data"),
+        tabItem(tabName = "pca",
+                h2("Principal Analysis Components"),
                 pageWithSidebar(
-                  headerPanel('K-means clustering'),
+                  headerPanel(''),
                   sidebarPanel(
-                    selectInput('xcol', 'X Variable', names(datNum)),
-                    selectInput('ycol', 'Y Variable', names(datNum),
-                                selected=names(datNum)[[2]]),
-                    numericInput('clusters', 'Cluster count', 3,
-                                 min = 1, max = 9)
+                    selectizeInput("pcVars", "Choose the Variables", 
+                                   choices =  c(names(datNum[1:12])), 
+                                   selected = c("failures","goout","studytime", "freetime"), 
+                                   multiple = T)
+                    #selectInput('xcol', 'X Variable', names(datNum)),
+                    #selectInput('ycol', 'Y Variable', names(datNum),
+                     #           selected=names(datNum)[[2]]),
+                    #numericInput('clusters', 'Cluster count', 3,
+                        #         min = 1, max = 9)
                   ),
                   mainPanel(
-                    plotOutput('clusPlot'),
-                    plotOutput('dendoPlot')
+                    verbatimTextOutput('pcOut'),
+                    plotOutput('biPlot'),
+                    dataTableOutput('pcaTab')
                   )
                 )
                 ), #close clustering tab
         
- 
+
         
         tabItem(tabName = "modeling", 
-              fluidPage(
-                panel(
-                h2("Setup Some Models for our data"),
-                box(selectizeInput("response", "Choose  a Response Variable", 
+          fluidPage(
+            panel(
+             h2("Setup Some Models for our data"),
+             box(selectizeInput("response", "Choose  a Response Variable", 
                                choices =  c(names(dat[31:33])), selected = "G3"),
-                selectizeInput("allvar1", "Choose the Predictor Variables", 
+                 selectizeInput("allvar1", "Choose the Predictor Variables", 
                                choices =  c(names(dat[1:30])), 
                                selected = c("school","sex","higher", "failures","goout"), 
                                multiple = T),
-                uiOutput('modForm'),
+                 uiOutput('modForm')
                 ), # close box
-                box(selectizeInput("model", "Choose Type of Fit", 
+             box(selectizeInput("model", "Choose Type of Fit", 
                                    choices =  c("GLM","ClassificationTree", "RandomForest", "BaggedTree")),
                   
-                  verbatimTextOutput('modResults')
+                verbatimTextOutput('modResults')
                   )), # close box and panel
-                fluidRow(
-                 # column(
-                  #  width = 10, offset = 1,
-                    panel(
-                      box(selectizeInput("predresponse", "Choose  a Response Variable", 
-                                         choices =  c(names(dat[31:33])), selected = "G3"),
-                          selectizeInput("predvars", "Choose the Predictor Variables", 
-                                         choices =  c(names(dat[1:30])), 
-                                         selected = c("school","sex","higher", "failures","goout"), 
-                                         multiple = T),
-                          uiOutput('predForm')
-                          ), # close box
-                      #checkboxGroupInput(inputId = "predvars", 
-                       #            label = "Choose variables to use", 
-                        #           choices = c(names(dat[1:30])),
-                         #          selected = c("school", "sex", "age","address"),
-                          #         inline = TRUE),
-                box(
-                conditionalPanel(condition=("input.predvars.includes('school')"), 
+          fluidRow(
+            panel(h2("Predictions from the above model"),
+
+              box(
+                conditionalPanel(condition=("input.allvar1.includes('school')"), 
                                  selectizeInput("predschool", "Select School", 
                                                 choices = c("",levels(as.factor(dat$school))),
                                                 selected = NULL)
                                  ),
-                conditionalPanel(condition = ("input.predvars.includes('sex')"),
+                conditionalPanel(condition = ("input.allvar1.includes('sex')"),
                                  selectizeInput("predsex", "Select Sex", 
                                                 choices = c("",levels(as.factor(dat$sex))),
                                                 selected = NULL)
                                  ),
-                conditionalPanel(condition = ("input.predvars.includes('age')"),
+                conditionalPanel(condition = ("input.allvar1.includes('age')"),
                                  selectizeInput("predage", "Select Age", 
                                                 choices = c("",levels(as.factor(dat$age))),
                                  selected = NULL)
                 ),
               
-                conditionalPanel(condition = ("input.predvars.includes('address')"),
+                conditionalPanel(condition = ("input.allvar1.includes('address')"),
                                  selectizeInput("predaddress", "Select Address", 
                                                 choices = c("",levels(as.factor(dat$address))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('famsize')"),
+                conditionalPanel(condition = ("input.allvar1.includes('famsize')"),
                                  selectizeInput("predfamsize", "Select Famsize", 
                                                 choices = c("",levels(as.factor(dat$famsize))),
                                                 selected = NULL)
                 ),
         
-                conditionalPanel(condition = ("input.predvars.includes('Pstatus')"),
+                conditionalPanel(condition = ("input.allvar1.includes('Pstatus')"),
                                  selectizeInput("predPstatus", "Select Pstatus", 
                                                 choices = c("",levels(as.factor(dat$Pstatus))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('Medu')"),
+                conditionalPanel(condition = ("input.allvar1.includes('Medu')"),
                                  selectizeInput("predMedu", "Select Medu", 
                                                 choices = c("",levels(as.factor(dat$Medu))),
                                  selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('Fedu')"),
+                conditionalPanel(condition = ("input.allvar1.includes('Fedu')"),
                                  selectizeInput("predFedu", "Select Fedu", 
                                                 choices = c("",levels(as.factor(dat$Fedu))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('Mjob')"),
+                conditionalPanel(condition = ("input.allvar1.includes('Mjob')"),
                                  selectizeInput("predMjob", "Select Mjob", 
                                                 choices = c("",levels(as.factor(dat$Mjob))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('Fjob')"),
+                conditionalPanel(condition = ("input.allvar1.includes('Fjob')"),
                                  selectizeInput("predFjob", "Select Fjob", 
                                                 choices = c("",levels(as.factor(dat$Fjob))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('reason')"),
+                conditionalPanel(condition = ("input.allvar1.includes('reason')"),
                                  selectizeInput("predReason", "Select reason", 
                                                 choices = c("",levels(as.factor(dat$reason))),
                                                 selected = NULL)
                 ),
                 
 
-                conditionalPanel(condition = ("input.predvars.includes('guardian')"),
+                conditionalPanel(condition = ("input.allvar1.includes('guardian')"),
                                  selectizeInput("predGuardian", "Select Guardian", 
                                                 choices = c("",levels(as.factor(dat$guardian))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('traveltime')"),
+                conditionalPanel(condition = ("input.allvar1.includes('traveltime')"),
                                  selectizeInput("predTraveltime", "Select Traveltime", 
                                                 choices = c("",levels(as.factor(dat$traveltime))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('studytime')"),
+                conditionalPanel(condition = ("input.allvar1.includes('studytime')"),
                                  selectizeInput("predStudytime", "Select Studytime", 
                                                 choices = c("",levels(as.factor(dat$studytime))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('failures')"),
+                conditionalPanel(condition = ("input.allvar1.includes('failures')"),
                                  selectizeInput("predFailures", "Select Failures", 
                                                 choices = c("",levels(as.factor(dat$failures))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('schoolsup')"),
+                conditionalPanel(condition = ("input.allvar1.includes('schoolsup')"),
                                  selectizeInput("predSchoolsup", "Select Schoolsup", 
                                                 choices = c("",levels(as.factor(dat$schoolsup))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('famsup')"),
+                conditionalPanel(condition = ("input.allvar1.includes('famsup')"),
                                  selectizeInput("predFamsup", "Select Famsup", 
                                                 choices = c("",levels(as.factor(dat$famsup))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('paid')"),
+                conditionalPanel(condition = ("input.allvar1.includes('paid')"),
                                  selectizeInput("predPaid", "Select Paid", 
                                                 choices = c("",levels(as.factor(dat$paid))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('activities')"),
+                conditionalPanel(condition = ("input.allvar1.includes('activities')"),
                                  selectizeInput("predActivities", "Select Activities", 
                                                 choices = c("",levels(as.factor(dat$activities))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('nursery')"),
+                conditionalPanel(condition = ("input.allvar1.includes('nursery')"),
                                  selectizeInput("predNursery", "Select Nursery", 
                                                 choices = c("",levels(as.factor(dat$nursery))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('higher')"),
+                conditionalPanel(condition = ("input.allvar1.includes('higher')"),
                                  selectizeInput("predHigher", "Select Higher", 
                                                 choices = c("",levels(as.factor(dat$higher))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('internet')"),
+                conditionalPanel(condition = ("input.allvar1.includes('internet')"),
                                  selectizeInput("predInternet", "Select Internet", 
                                                 choices = c("",levels(as.factor(dat$internet))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('romantic')"),
+                conditionalPanel(condition = ("input.allvar1.includes('romantic')"),
                                  selectizeInput("predRomantic", "Select Romantic", 
                                                 choices = c("",levels(as.factor(dat$romantic))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('famrel')"),
+                conditionalPanel(condition = ("input.allvar1.includes('famrel')"),
                                  selectizeInput("predFamrel", "Select Famrel", 
                                                 choices = c("",levels(as.factor(dat$famrel))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('freetime')"),
+                conditionalPanel(condition = ("input.allvar1.includes('freetime')"),
                                  selectizeInput("predFreetime", "Select Freetime", 
                                                 choices = c("",levels(as.factor(dat$freetime))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('goout')"),
-                                 selectizeInput("predGoout", "Select Goout", 
-                                                choices = c("",levels(as.factor(dat$goout))),
-                                                selected = NULL)
-                ),
-                
-                conditionalPanel(condition = ("input.predvars.includes('goout')"),
+                conditionalPanel(condition = ("input.allvar1.includes('goout')"),
                                  selectizeInput("predGoout", "Select Goout", 
                                                 choices = c("",levels(as.factor(dat$goout))),
                                                 selected = NULL)
                 ),
                 
                 
-                conditionalPanel(condition = ("input.predvars.includes('Dalc')"),
+                conditionalPanel(condition = ("input.allvar1.includes('Dalc')"),
                                  selectizeInput("predDalc", "Select Dalc", 
                                                 choices = c("",levels(as.factor(dat$Dalc))),
                                                 selected = NULL)
                 ),
                 
                 
-                conditionalPanel(condition = ("input.predvars.includes('Walc')"),
+                conditionalPanel(condition = ("input.allvar1.includes('Walc')"),
                                  selectizeInput("predWalc", "Select Walc", 
                                                 choices = c("",levels(as.factor(dat$Walc))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('health')"),
+                conditionalPanel(condition = ("input.allvar1.includes('health')"),
                                  selectizeInput("predHealth", "Select Health", 
                                                 choices = c("",levels(as.factor(dat$health))),
                                                 selected = NULL)
                 ),
                 
-                conditionalPanel(condition = ("input.predvars.includes('absences')"),
+                conditionalPanel(condition = ("input.allvar1.includes('absences')"),
                                  selectizeInput("predAbsences", "Select Absences", 
                                                 choices = c("",levels(as.factor(dat$absences))),
                                                 selected = NULL)
-                ),
-                actionButton("update", "Update")
+                )
               
                 
-                ) # close box
-                 
-                    ) # close panel
-                  #) # close column
-                ) # close fluid row
+              ), # close box
+              
+              box(h3("Estimate for the selected response:")
+                  ,h4("(Be sure to select a value for each predictor, otherwise you will get an error!)"),
+                  verbatimTextOutput('pred1'))   
+            ) # close panel
+          ) # close fluid row
                   
-                ,
-                box(verbatimTextOutput('pred1')),
-                box(tableOutput('pred'))
-                   ) #close fluid page
-                ), # close modeling tab
+  
+              #  box(tableOutput('pred'))
+          ) #close fluid page
+      ), # close modeling tab
         
         
         
