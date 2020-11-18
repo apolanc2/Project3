@@ -23,3 +23,7 @@ Try it out with:
 ```
 runGitHub("Project3", "apolanc2", subdir = "Project3App", ref = "main")
 ```
+Or use the file "runProject3.R"!   
+
+
+Enjoy!
