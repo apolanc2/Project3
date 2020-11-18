@@ -34,6 +34,8 @@ shinyServer(function(input, output, session) {
   )
   # read in our data. local directory not working at the moment and need full path
   dat <- read.csv(file = "student-mat.csv", sep = ";")
+  # numeric data set for corrlations and PCA
+  datNum <- dat %>% select(1:30) %>% select_if(is.numeric)
   # convert numeric values to factors
   dat$age <- as.factor(dat$age)
   dat$Fedu <- as.factor(dat$Fedu)
@@ -48,23 +50,6 @@ shinyServer(function(input, output, session) {
   dat$Dalc <- as.factor(dat$Dalc)
   dat$Walc <- as.factor(dat$Walc)
   dat$health <- as.factor(dat$health)
-  
-  # new dataset for numeric values for correlations and PCA 
-  datNum <- dat %>% select(1:30) %>% select_if(is.factor)
-  datNum$age <- as.numeric(as.character(datNum$age))
-  datNum$Fedu <- as.numeric(as.character(datNum$Fedu))
-  datNum$Medu <- as.numeric(as.character(datNum$Medu))
-  datNum$traveltime <- as.numeric(as.character(datNum$traveltime))
-  datNum$studytime <- as.numeric(as.character(datNum$studytime))
-  datNum$Fedu <- as.numeric(as.character(datNum$Fedu))
-  datNum$failures <- as.numeric(as.character(datNum$failures))
-  datNum$famrel <- as.numeric(as.character(datNum$famrel))
-  datNum$freetime <- as.numeric(as.character(datNum$freetime))
-  datNum$goout <- as.numeric(as.character(datNum$goout))
-  datNum$Dalc <- as.numeric(as.character(datNum$Dalc))
-  datNum$Walc <- as.numeric(as.character(datNum$Walc))
-  datNum$health <- as.numeric(as.character(datNum$health))
-  
 
   
 # EDA tab
