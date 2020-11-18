@@ -25,7 +25,7 @@ library(shinyWidgets)
 
 shinyUI(
   dashboardPage(
-    dashboardHeader(title = " Project 3: Students"),
+    dashboardHeader(title = "Project 3: Students"),
     dashboardSidebar(
       # create tabs
         sidebarMenu(
@@ -41,8 +41,9 @@ shinyUI(
         tabItem(tabName = "about",
                 h2("About This Project"),
                
-        h4("This project is about the student performance data set. 
-           This data captures many socio-economic and personal variables to 
+        h4("This project is about the", 
+        a(href = "https://archive.ics.uci.edu/ml/machine-learning-databases/00320/","student performance data set."), 
+           "This data captures many socio-economic and personal variables to 
            determine whether it affects the grades of students in math and portuguese. 
            The data was separated by subject and I decided to analyze the math subject.
            Grades were collected for each student for the first period, second period, and final grade.
@@ -51,22 +52,22 @@ shinyUI(
            I have created this app to be able to explore the data and make some predictions."),
         br(),
         h3("How to navigate this app"),
-        h4("The Data Exploration tab allows you to see the summaries of the different 
+        h4("The", tags$b("Data Exploration"), "tab allows you to see the summaries of the different 
            variables up against the overall grade response and the grade summaries for each school.
            These summaries can be saved to your computer!
            It also shows the correlations of our numeric variables. 
            This interactive correlation plot allows you to view additional details when hovering over it."),
         br(),
-        h4("The Principal Component Analysis tab allows you to choose the variables to create principal components. 
+        h4("The", tags$b("Principal Component Analysis"),"tab allows you to choose the variables to create principal components. 
            These are then displayed nicely in a biplot."),
         br(),
-        h4("The Modeling tab allows you to choose the response variable and the predictor 
+        h4("The", tags$b("Modeling"), "tab allows you to choose the response variable and the predictor 
            variables to create a model formula. Then you can select the type of model you are interested in:
            a generalized linear model, classification tree, random forrest, and a bagged tree.
            The results for the selected method will be displayed. Using the same model, 
            you can select the desired values for your predictor variables and a prediction will be displayed."),
         br(),
-        h4("Lastly, the Data tab allows you to look at the raw data and subset by the school.
+        h4("Lastly, the", tags$b("Data"), "tab allows you to look at the raw data and subset by the school.
            This data can also be downloaded to your computer."),
         h2("Information about the variables"),
         dataTableOutput("infoTab"),
@@ -144,11 +145,12 @@ shinyUI(
                                choices =  c(names(dat[1:30])), 
                                selected = c("school","sex","higher", "failures","goout"), 
                                multiple = T), # select as many as desired
+                 h3("Selected Model"),
                  uiOutput('modForm')
                 ), # close box
-             box(selectizeInput("model", "Choose Type of Fit", 
+             box(selectizeInput("model", "Choose Method", 
                                    choices =  c("GLM","ClassificationTree", "RandomForest", "BaggedTree")),
-                  
+                h3("Fit Results"),  
                 verbatimTextOutput('modResults')
                   )), # close box and panel
           fluidRow(
@@ -339,7 +341,7 @@ shinyUI(
                 
               ), # close box
               
-              box(h3("Estimate for the selected response:")
+              box(h3("Prediction for the selected response:")
                   ,h4("(Be sure to select a value for each predictor, otherwise you will get an error!)"),
                   verbatimTextOutput('pred1'))   
             ) # close panel
