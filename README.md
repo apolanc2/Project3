@@ -12,11 +12,12 @@ To get this started I used the following packages:
   - ggplot2  
   - plotly  
   - ggcorrplot  
-  - qtlcharts    
+  - qtlcharts
+  - shinyWidgets    
 
 Quickly install these pacakages with:   
  ```
- install.packages(c("shiny", "shinydashboard", "DT", "tidyverse", "corrplot", "rgl", "tree", "caret", "ggplot2", "plotly", "ggcorrplot", "qtlcharts"))
+ install.packages(c("shiny", "shinydashboard", "DT", "tidyverse", "corrplot", "rgl", "tree", "caret", "ggplot2", "plotly", "ggcorrplot", "qtlcharts","shinyWidgets"))
  ```
  
 Try it out with:   
