@@ -20,6 +20,7 @@ library(caret)
 library(ggplot2)
 library(plotly)
 library(ggcorrplot)
+library(qtlcharts)
 library(shinyWidgets)
 
 shinyUI(

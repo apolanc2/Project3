@@ -20,6 +20,7 @@ library(caret)
 library(ggplot2)
 library(plotly)
 library(ggcorrplot)
+library(shinyWidgets)
 library(qtlcharts)
 
 # Define server logic required to draw a histogram
