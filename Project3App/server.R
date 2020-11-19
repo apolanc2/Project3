@@ -186,22 +186,22 @@ shinyServer(function(input, output, session) {
   # used conditional statements to change the fit method based on user input
   fit1<- reactive({
     if(input$model == "GLM"){
-      train(data = dat, meanform(), method = "glm", 
+      train(data = datTrain, meanform(), method = "glm", 
             preProcess = c("center", "scale"),
             trControl = trainControl(method="cv",number=10))
     }
     else if(input$model == "ClassificationTree"){
-      train(data = dat, meanform(), method = "rpart", 
+      train(data = datTrain, meanform(), method = "rpart", 
             preProcess = c("center", "scale"),
             trControl = trainControl(method="cv"))
     }
     else if(input$model == "RandomForest"){
-      train(data = dat, meanform(), method = "rf", 
+      train(data = datTrain, meanform(), method = "rf", 
             preProcess = c("center", "scale"),
             trControl = trainControl(method="cv"))
     }
     else {
-      train(data = dat, meanform(), method = "treebag", 
+      train(data = datTrain, meanform(), method = "treebag", 
             preProcess = c("center", "scale"),
             trControl = trainControl(method="cv"))
    }
